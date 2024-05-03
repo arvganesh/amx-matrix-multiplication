@@ -12,10 +12,12 @@ using Eigen::Matrix3i;
 
 int benchmarkKernel(std::unique_ptr<MMKernel> kernel, int startDim, int numIters, int increment, Stats& stats) {
     std::cout << "Benchmarking: " << kernel->getName() << std::endl;
+    bool shouldAlign32 = kernel->getName() == "AMX Kernel";
     for (int N = startDim; N < startDim + numIters * increment; N += increment) {
-        IntMatrix A(N, true); // random NxN
-        IntMatrix B(N, true); // random NxN
-        IntMatrix C(N);
+        IntMatrix A(N, true, shouldAlign32); // random NxN
+        IntMatrix B(N, true, shouldAlign32); // random NxN
+        IntMatrix C(N); // zero-filled NxN
+        B.Transpose(); // B is in "column-major" order.
 
         // Start recording stats.
         auto start = std::chrono::high_resolution_clock::now();
@@ -65,6 +67,9 @@ void run(int argc, char* argv[]) {
         }
         if (*it == "tiled") {
             kernels_to_test.push_back(std::make_unique<TiledKernel>());
+        }
+        if (*it == "amx") {
+            kernels_to_test.push_back(std::make_unique<AMXKernel>());
         }
         if (*it == "seed") {
             if (*(++it) == "random")

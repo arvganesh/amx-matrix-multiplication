@@ -54,36 +54,33 @@ int main() {
 
     __uint16_t xy[32];
     char zeroes[64] = {0};
-    // Matrix<__uint16_t> A = {{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}};
-    // Matrix<__uint16_t> B = {{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}};
-    std::array<std::array<__uint16_t, 3>, 3> A = {{{5, 8, 2}, {8, 3, 1}, {5, 3, 9}}};
-    std::array<std::array<__uint16_t, 3>, 3> B = {{{5, 8, 2}, {8, 3, 1}, {5, 3, 9}}};
+    Matrix<__uint16_t> A = {{1, 2, 3, 4, 5, 6, 7, 8, 9, 100, 1, 2, 3, 4, 5, 6, 7, 8, 9, 100, 1, 2, 3, 4, 5, 6, 7, 8, 9, 100, 11, 60, 60}};
+    Matrix<__uint16_t> B = {{1, 2, 3, 4, 5, 6, 7, 8, 9, 100, 1, 2, 3, 4, 5, 6, 7, 8, 9, 100, 1, 2, 3, 4, 5, 6, 7, 8, 9, 100, 12, 24, 5}};
+    // Matrix<__uint16_t> C = {{5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5}};
+    // Matrix<__uint16_t> D = {{4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4}};
 
-    Matrix<__uint16_t> C(4);
+    AMX_LDX(AMX_PTR(&A(0, 0)) | LDX_REG(0));
+    AMX_LDY(AMX_PTR(&B(0, 0)) | LDY_REG(0));
+    // AMX_LDX(AMX_PTR(&C(0, 0)) | LDX_REG(1));
+    // AMX_LDY(AMX_PTR(&D(0, 0)) | LDY_REG(1));
+    // AMX_LDX(AMX_PTR(&C(0, 0)) | LDX_REG(2));
+    // AMX_LDY(AMX_PTR(&D(0, 0)) | LDY_REG(2));
 
-    // __uint16_t* aPtr = &A(0, 0);
-    // __uint16_t* bPtr = &B(0, 0);
-    __uint16_t* aPtr = &A[0][0];
-    __uint16_t* bPtr = &B[0][0];
-
-    // std::cout << A << std::endl;
-    // std::cout << B << std::endl;
-
-    AMX_LDX(AMX_PTR(aPtr) | LDX_REG(0));
-    AMX_LDY(AMX_PTR(bPtr) | LDY_REG(0));
-    AMX_LDZ(AMX_PTR(zeroes) | LDZ_REG(0));
-    AMX_MAC16(VECTOR_MODE | SKIP_Z | MAC16_Z_ROW(0));
+    AMX_MAC16(VECTOR_MODE | SKIP_Z | MAC16_X_OFFSET(0) | MAC16_Y_OFFSET(0) | MAC16_Z_ROW(0));
+    AMX_MAC16(VECTOR_MODE | SKIP_Z | MAC16_X_OFFSET(64) | MAC16_Y_OFFSET(64) | MAC16_Z_ROW(1));
+    AMX_MAC16(VECTOR_MODE | SKIP_Z | MAC16_X_OFFSET(128) | MAC16_Y_OFFSET(128) | MAC16_Z_ROW(2));
+    AMX_MAC16(VECTOR_MODE | SKIP_Z | MAC16_X_OFFSET(0) | MAC16_Y_OFFSET(0) | MAC16_Z_ROW(0));
 
     for (int r = 0; r < 32; r++) {
         AMX_STZ(AMX_PTR(&xy) | STZ_Z_ROW(r));
         for (int i = 0; i < 32; i++) {
-            printf("%hu, ", xy[i]);
+            printf("%u, ", xy[i]);
             // print_bits(xy[i]);
         }
         printf("\n");
     }
 
-    std::cout << C << std::endl;
+    // std::cout << C << std::endl;
 
     AMX_CLR();
     return 0;

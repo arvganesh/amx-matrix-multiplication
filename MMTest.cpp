@@ -1,6 +1,8 @@
 #include "Kernels.h"
 #include "MMKernel.h"
 #include "Matrix.h"
+#include <arm/_types.h>
+#include <array>
 #include <ios>
 
 bool matrixCompare(IntMatrix& A, IntMatrix&B) {
@@ -45,7 +47,7 @@ void runTests() {
     kernels.push_back(std::make_unique<NaiveCacheAwareKernel>());
 
     for (auto& kernel : kernels) {
-        IntMatrix C_Actual(3, 3);
+        IntMatrix C_Actual(3);
         std::cout << "Testing: " << kernel->getName() <<  " – ";
         kernel->multiply(A, B, C_Actual);
         if (!matrixCompare(C_Actual, C_Expected)) {
@@ -58,29 +60,29 @@ void runTests() {
 }
 
 void compare() {
-    int N = 4;
+    int N = 2;
     IntMatrix A(N, true);
     IntMatrix B(N, true);
     IntMatrix C_Naive(N);
-    IntMatrix C_Tiled(N);
+    IntMatrix C_Test(N);
 
     NaiveKernel k1;
-    TiledKernel k2;
+    AMXKernel k2;
 
     k1.multiply(A, B, C_Naive);
-    k2.multiply(A, B, C_Tiled);
+    k2.multiply(A, B, C_Test);
 
-    if (!matrixCompare(C_Naive, C_Tiled)) {
+    if (!matrixCompare(C_Naive, C_Test)) {
         std::cout << "Test Failed" << std::endl;
         std::cout << "Expected ";
         std::cout << C_Naive << std::endl;
         std::cout << "Actual ";
-        std::cout << C_Tiled << std::endl;
+        std::cout << C_Test << std::endl;
     }
 }
 
 int main() {
-    runTests();
-    // compare();
+    // runTests();
+    compare();
     return 0;
 }

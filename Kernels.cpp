@@ -5,7 +5,7 @@
 #include <Eigen/Dense>
 
 #include "Eigen/src/Core/Matrix.h"
-#include "sse2neon/sse2neon.h"
+#include "amx_helper.h"
 #include "Kernels.h"
 
 using Eigen::Matrix3i;
@@ -95,21 +95,10 @@ void NaiveCacheAwareVectorizedKernel::multiply(IntMatrix& A /* NxM */, IntMatrix
     if (A.numCols() != B.numRows())
         throw std::invalid_argument("Input dimension mismatch.");
 
-    std::cout << A << std::endl;
-    A.Transpose();
-    std::cout << A << std::endl;
-    B.Transpose();
-
     int i, j, k;
-    __m128 a, b, c;
     for (i = 0; i < N; i++) {
         for (j = 0; j < P; j++) {
             for (k = 0; k < M; k++) {
-                const __m128i* aPtr = (__m128i*) &A(i, k);
-                const __m128i* bPtr = (__m128i*) &B(k, j);
-                a = _mm_load_si128(aPtr);
-                b = _mm_load_si128(bPtr);
-                c = _mm_mul_epi32(a, b);
                 C(i, j) += A(i, k) * B(k, j);
             }
         }
@@ -118,6 +107,43 @@ void NaiveCacheAwareVectorizedKernel::multiply(IntMatrix& A /* NxM */, IntMatrix
 
 std::string NaiveCacheAwareVectorizedKernel::getName() {
     return "Naive Cache Aware Vectorized Kernel";
+}
+
+void AMXKernel::multiply(IntMatrix& A /* NxM */, IntMatrix& B /* MxP */, IntMatrix& C) {
+    AMX_SET();
+    size_t N = A.numRows();
+    size_t M = A.numCols();
+    size_t P = B.numCols();
+
+    if (A.numCols() != B.numRows())
+        throw std::invalid_argument("Input dimension mismatch.");
+
+    B.Transpose(); // B is in "column-major" order.
+
+    unsigned short pointwiseProduct[32] = {0};
+    // AMX_LDZ(AMX_PTR(&pointwiseProduct) | LDZ_REG(0));
+
+    size_t i, j, k, ending;
+    for (i = 0; i < N; i++) {
+        for (j = 0; j < P; j++) {
+            for (k = 0; k < M; k += 32) {
+                ending = std::min(k + 32, M);
+                AMX_LDX(AMX_PTR(&A(i, k)) | LDX_REG(0));
+                AMX_LDY(AMX_PTR(&B(j, k)) | LDY_REG(0)); // indicies are switched since we transpose B.
+                AMX_MAC16(MAC16_VECTOR_MODE | MAC16_SKIP_Z | MAC16_X_OFFSET(0) | MAC16_Y_OFFSET(0) | MAC16_Z_ROW(0));
+                AMX_STZ(AMX_PTR(&pointwiseProduct) | STZ_Z_ROW(0));
+                for (int idx = k; idx < ending; idx++) {
+                    C(i, j) += pointwiseProduct[idx - k];
+                }
+            }
+        }
+    }
+
+    AMX_CLR();
+}
+
+std::string AMXKernel::getName() {
+    return "AMX Kernel";
 }
 
 void eigenMultiply(Matrix3i& A, Matrix3i& B) {

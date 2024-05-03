@@ -1,4 +1,4 @@
-CFLAGS = -std=c++20 -O3 -Rpass=vector -fopenmp-simd -ffast-math -march=armv8-a+fp+simd
+CFLAGS = -std=c++20 -O3 -fopenmp-simd -ffast-math -march=armv8-a+fp+simd
 
 run: MMBenchmark.o Kernels.o
 	g++ -o run MMBenchmark.o Kernels.o $(CFLAGS)
@@ -18,6 +18,5 @@ Kernels.o: Kernels.cpp Kernels.h MMKernel.h Matrix.h
 cache:
 	valgrind --tools=cachegrind ./run tiled seed random
 
-
 clean:
-	rm *.o *.h.gch run
+	rm *.o *.h.gch run test

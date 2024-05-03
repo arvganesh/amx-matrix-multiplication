@@ -10,10 +10,15 @@
 #include <string>
 #include <iomanip>
 
-template<typename T, unsigned R, unsigned C>
+template<typename T>
 class Matrix {
     public:
-        Matrix(int n, int m, bool shouldRandomFill = false) {
+        Matrix(int n, int m, bool shouldRandomFill = false, bool shouldAlign32 = false) : rows(n), cols(m) {
+            size_t size = (n * m);
+            if (shouldAlign32 && size % 32 != 0) {
+                size += (32 - size % 32);
+            }
+            data.resize(size);
             if (shouldRandomFill) {
                 randomFillMatrix();
             } else {
@@ -21,33 +26,37 @@ class Matrix {
             }
         }
 
-        Matrix(int n, bool shouldRandomFill = false) : Matrix(n, n, shouldRandomFill) {}
+        Matrix(int n, bool shouldRandomFill = false, bool shouldAlign32 = false) : Matrix(n, n, shouldRandomFill, shouldAlign32) {}
 
-        Matrix(std::initializer_list<std::array<std::array<T, C>, R> > l) : data(l) {}
+        Matrix(std::initializer_list<std::vector<int> > l) {
+            for (auto& vec : l) {
+                data.insert(data.end(), vec.begin(), vec.end());
+            }
+        }
 
         T& operator()(size_t row, size_t col) {
-            return data[row].at(col);
+            return data.at(row * rows + col);
         }
 
         const T& operator()(size_t row, size_t col) const {
-            return data[row].at(col);
+            return data.at(row * rows + col);
         }
 
         int numRows() {
-            return R;
+            return rows;
         }
 
         int numCols() {
-            return C;
+            return cols;
         }
 
-        friend std::ostream& operator<<(std::ostream&, Matrix<T, R, C>& m) {
+        friend std::ostream& operator<<(std::ostream&, Matrix<T>& m) {
             // Print the matrix with aligned columns
             std::cout << m.numRows() << "x" << m.numCols() << " matrix: " << std::endl;
-            for (const auto& row : m.data) {
-                for (size_t col = 0; col < row.size(); ++col) {
-                    std::cout << std::setw(9) << std::right << row[col];
-                    if (col != row.size() - 1) {
+            for (size_t row = 0; row < m.numRows(); ++row) {
+                for (size_t col = 0; col < m.numCols(); ++col) {
+                    std::cout << std::setw(9) << std::right << m(row, col);
+                    if (col != m.numCols() - 1) {
                         std::cout << " "; // Add space between columns
                     }
                 }
@@ -57,36 +66,32 @@ class Matrix {
         }
 
         void Transpose() {
-            for (int i = 0; i < R; i++) {
+            for (int i = 0; i < rows; i++) {
                 for (int j = 0; j < i; j++) {
-                    int tmp = data[i][j];
-                    data[i][j] = data[j][i];
-                    data[j][i] = tmp;
+                    int tmp = data[i * rows + j];
+                    data[i * rows + j] = data[j * rows + i];
+                    data[j * rows + i] = tmp;
                 }
             }
         }
 
     private:
-        std::array<std::array<T, C>, R> data;
+        std::vector<T> data;
+        int rows;
+        int cols;
         static T getRandomNumber() {
             return std::rand() % 50;
         }
 
-        static void randomFillRow(std::array<T, C>& row) {
-            std::generate(row.begin(), row.end(), getRandomNumber);
-        }
-
         void randomFillMatrix() {
-            std::for_each(data.begin(), data.end(), randomFillRow);
+            std::generate(data.begin(), data.end(), getRandomNumber);
             return;
         }
 
         void zeroFillMatrix() {
-            for (auto& row : data) {
-                std::fill(row.begin(), row.end(), 0);
-            }
+            std::fill(data.begin(), data.end(), 0);
         }
 };
 
-typedef Matrix<int, 3, 3> IntMatrix;
+typedef Matrix<unsigned short> IntMatrix;
 #endif
