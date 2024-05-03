@@ -12,19 +12,17 @@ using Eigen::Matrix3i;
 
 int benchmarkKernel(std::unique_ptr<MMKernel> kernel, int startDim, int numIters, int increment, Stats& stats) {
     std::cout << "Benchmarking: " << kernel->getName() << std::endl;
-    bool shouldAlign32 = kernel->getName() == "AMX Kernel";
+    bool shouldAlign32 = kernel->getName() == "AMX Transpose Kernel" or kernel->getName() == "AMX Transpose Tiled Kernel";
     for (int N = startDim; N < startDim + numIters * increment; N += increment) {
         IntMatrix A(N, true, shouldAlign32); // random NxN
         IntMatrix B(N, true, shouldAlign32); // random NxN
         IntMatrix C(N); // zero-filled NxN
-        B.Transpose(); // B is in "column-major" order.
 
         // Start recording stats.
         auto start = std::chrono::high_resolution_clock::now();
         kernel->multiply(A, B, C);
         auto end = std::chrono::high_resolution_clock::now();
         auto elapsed_time = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-        std::cout << "Dim " << N << " took " << elapsed_time.count() << std::endl;
         stats[kernel->getName()].add(elapsed_time.count());
     }
     return 0;
@@ -69,7 +67,10 @@ void run(int argc, char* argv[]) {
             kernels_to_test.push_back(std::make_unique<TiledKernel>());
         }
         if (*it == "amx") {
-            kernels_to_test.push_back(std::make_unique<AMXKernel>());
+            kernels_to_test.push_back(std::make_unique<AMXTransposeKernel>());
+        }
+        if (*it == "amx-transpose") {
+            kernels_to_test.push_back(std::make_unique<AMXTransposeTiledKernel>());
         }
         if (*it == "seed") {
             if (*(++it) == "random")

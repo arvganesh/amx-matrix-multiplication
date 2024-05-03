@@ -54,10 +54,13 @@ int main() {
 
     __uint16_t xy[32];
     char zeroes[64] = {0};
-    Matrix<__uint16_t> A = {{1, 2, 3, 4, 5, 6, 7, 8, 9, 100, 1, 2, 3, 4, 5, 6, 7, 8, 9, 100, 1, 2, 3, 4, 5, 6, 7, 8, 9, 100, 11, 60, 60}};
-    Matrix<__uint16_t> B = {{1, 2, 3, 4, 5, 6, 7, 8, 9, 100, 1, 2, 3, 4, 5, 6, 7, 8, 9, 100, 1, 2, 3, 4, 5, 6, 7, 8, 9, 100, 12, 24, 5}};
+    // Matrix<__uint16_t> A = {{1, 2, 3, 4, 5, 6, 7, 8, 9, 100, 1, 2, 3, 4, 5, 6, 7, 8, 9, 100, 1, 2, 3, 4, 5, 6, 7, 8, 9, 100, 11, 60, 60}};
+    // Matrix<__uint16_t> B = {{1, 2, 3, 4, 5, 6, 7, 8, 9, 100, 1, 2, 3, 4, 5, 6, 7, 8, 9, 100, 1, 2, 3, 4, 5, 6, 7, 8, 9, 100, 12, 24, 5}};
     // Matrix<__uint16_t> C = {{5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5}};
     // Matrix<__uint16_t> D = {{4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4}};
+
+    IntMatrix A = {{2}};
+    IntMatrix B = {{6, 7, 8}};
 
     AMX_LDX(AMX_PTR(&A(0, 0)) | LDX_REG(0));
     AMX_LDY(AMX_PTR(&B(0, 0)) | LDY_REG(0));
@@ -66,10 +69,11 @@ int main() {
     // AMX_LDX(AMX_PTR(&C(0, 0)) | LDX_REG(2));
     // AMX_LDY(AMX_PTR(&D(0, 0)) | LDY_REG(2));
 
-    AMX_MAC16(VECTOR_MODE | SKIP_Z | MAC16_X_OFFSET(0) | MAC16_Y_OFFSET(0) | MAC16_Z_ROW(0));
-    AMX_MAC16(VECTOR_MODE | SKIP_Z | MAC16_X_OFFSET(64) | MAC16_Y_OFFSET(64) | MAC16_Z_ROW(1));
-    AMX_MAC16(VECTOR_MODE | SKIP_Z | MAC16_X_OFFSET(128) | MAC16_Y_OFFSET(128) | MAC16_Z_ROW(2));
-    AMX_MAC16(VECTOR_MODE | SKIP_Z | MAC16_X_OFFSET(0) | MAC16_Y_OFFSET(0) | MAC16_Z_ROW(0));
+
+    AMX_MAC16(MATRIX_MODE | SKIP_Z | MAC16_X_OFFSET(0) | MAC16_Y_OFFSET(0) | MAC16_Z_ROW(0));
+    // AMX_MAC16(VECTOR_MODE | SKIP_Z | MAC16_X_OFFSET(64) | MAC16_Y_OFFSET(64) | MAC16_Z_ROW(1));
+    // AMX_MAC16(VECTOR_MODE | SKIP_Z | MAC16_X_OFFSET(128) | MAC16_Y_OFFSET(128) | MAC16_Z_ROW(2));
+    // AMX_MAC16(VECTOR_MODE | SKIP_Z | MAC16_X_OFFSET(0) | MAC16_Y_OFFSET(0) | MAC16_Z_ROW(0));
 
     for (int r = 0; r < 32; r++) {
         AMX_STZ(AMX_PTR(&xy) | STZ_Z_ROW(r));

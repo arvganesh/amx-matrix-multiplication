@@ -60,14 +60,14 @@ void runTests() {
 }
 
 void compare() {
-    int N = 2;
-    IntMatrix A(N, true);
-    IntMatrix B(N, true);
+    int N = 4;
+    IntMatrix A(N, true, true);
+    IntMatrix B(N, true, true);
     IntMatrix C_Naive(N);
     IntMatrix C_Test(N);
 
     NaiveKernel k1;
-    AMXKernel k2;
+    AMXTransposeTiledKernel k2;
 
     k1.multiply(A, B, C_Naive);
     k2.multiply(A, B, C_Test);

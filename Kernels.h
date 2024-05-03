@@ -31,7 +31,13 @@ class NaiveCacheAwareVectorizedKernel : public MMKernel {
         std::string getName() override;
 };
 
-class AMXKernel : public MMKernel {
+class AMXTransposeKernel : public MMKernel {
+    public:
+        void multiply(IntMatrix& A /* NxM */, IntMatrix& B /* MxP */, IntMatrix& C) override;
+        std::string getName() override;
+};
+
+class AMXTransposeTiledKernel : public MMKernel {
     public:
         void multiply(IntMatrix& A /* NxM */, IntMatrix& B /* MxP */, IntMatrix& C) override;
         std::string getName() override;
