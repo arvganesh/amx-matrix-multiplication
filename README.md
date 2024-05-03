@@ -9,3 +9,7 @@ Important Files:
 - `Kernels.cpp / .h` - implementation of various kernels that were benchmarked.
 - `Stats.h` - a collection of tools to record data.
 - `amx_helper.h` – a header file that defines extra macros that makes the AMX instructions easier to use.
+
+Dependencies:
+
+- https://github.com/corsix/amx, make sure to clone this folder in the root directory.
