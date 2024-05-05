@@ -5,7 +5,7 @@
 #include <stdexcept>
 #include <Eigen/Dense>
 
-using Eigen::Matrix3i;
+using Eigen::MatrixXi;
 
 class NaiveKernel : public MMKernel {
     public:
@@ -43,6 +43,6 @@ class AMXTransposeTiledKernel : public MMKernel {
         std::string getName() override;
 };
 
-void eigenMultiply(Matrix3i& A, Matrix3i& B);
+void eigenMultiply(MatrixXi& A, MatrixXi& B, MatrixXi& C);
 
 #endif

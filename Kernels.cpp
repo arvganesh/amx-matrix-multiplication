@@ -8,7 +8,7 @@
 #include "amx_helper.h"
 #include "Kernels.h"
 
-using Eigen::Matrix3i;
+// using Eigen::MatrixXi;
 
 /* NAIVE KERNEL */
 void NaiveKernel::multiply(IntMatrix& A /* NxM */, IntMatrix& B /* MxP */, IntMatrix& C) {
@@ -41,7 +41,7 @@ void TiledKernel::multiply(IntMatrix& A /* NxM */, IntMatrix& B /* MxP */, IntMa
     if (A.numCols() != B.numRows())
         throw std::invalid_argument("Input dimension mismatch.");
 
-    size_t T = static_cast<int>(std::sqrt(M));
+    size_t T = static_cast<int>(std::sqrt(65536)); // NOT PORTABLE LOL.
     for (int i = 0; i < N; i += T) {
         int iBoundary = std::min(i + T, N);
         for (int j = 0; j < P; j += T) {
@@ -193,8 +193,7 @@ std::string AMXTransposeTiledKernel::getName() {
     return "AMX Transpose Tiled Kernel";
 }
 
-void eigenMultiply(Matrix3i& A, Matrix3i& B) {
-    Matrix3i C;
-    C.noalias() += A * B;
+void eigenMultiply(MatrixXi& A, MatrixXi& B, MatrixXi& C) {
+    C += A * B;
     return;
 }

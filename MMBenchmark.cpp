@@ -8,7 +8,7 @@
 #include "MMKernel.h"
 #include "Stats.h"
 
-using Eigen::Matrix3i;
+using Eigen::MatrixXi;
 
 int benchmarkKernel(std::unique_ptr<MMKernel> kernel, int startDim, int numIters, int increment, Stats& stats) {
     std::cout << "Benchmarking: " << kernel->getName() << std::endl;
@@ -22,7 +22,7 @@ int benchmarkKernel(std::unique_ptr<MMKernel> kernel, int startDim, int numIters
         auto start = std::chrono::high_resolution_clock::now();
         kernel->multiply(A, B, C);
         auto end = std::chrono::high_resolution_clock::now();
-        auto elapsed_time = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+        auto elapsed_time = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
         stats[kernel->getName()].add(elapsed_time.count());
     }
     return 0;
@@ -31,15 +31,15 @@ int benchmarkKernel(std::unique_ptr<MMKernel> kernel, int startDim, int numIters
 int benchmarkEigen(int startDim, int numIters, int increment, Stats& stats) {
     std::cout << "Benchmarking: Eigen" << std::endl;
     for (int N = startDim; N < startDim + numIters * increment; N += increment) {
-        Matrix3i A = Matrix3i::Random();
-        Matrix3i B = Matrix3i::Random();
+        MatrixXi A = MatrixXi::Random(N, N);
+        MatrixXi B = MatrixXi::Random(N, N);
+        MatrixXi C = MatrixXi::Zero(N, N);
 
         // Start recording stats.
         auto start = std::chrono::high_resolution_clock::now();
-        eigenMultiply(A, B);
+        eigenMultiply(A, B, C);
         auto end = std::chrono::high_resolution_clock::now();
-        auto elapsed_time = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
-        std::cout << "Dim " << N << " took " << elapsed_time.count() << std::endl;
+        auto elapsed_time = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
         stats["Eigen"].add(elapsed_time.count());
     }
     return 0;
