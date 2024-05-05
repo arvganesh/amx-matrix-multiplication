@@ -1,4 +1,4 @@
-# CS380L Course Project
+# Matrix Multiplication with Apple M1 AMX instruction set.
 
 Important Files:
 
