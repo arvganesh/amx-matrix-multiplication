@@ -1,4 +1,4 @@
-# Matrix Multiplication with Apple M1 AMX instruction set.
+# MatMul with Apple M1 AMX instruction set.
 
 Important Files:
 
